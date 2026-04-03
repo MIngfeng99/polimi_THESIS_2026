@@ -1,16 +1,19 @@
-/**
- * Lombardy heat exposure / risk mapping (2020-2022 summer)
+﻿/**
+ * EN: Lombardy heat exposure / risk mapping (2020-2022 summer)
+ * ZH: 伦巴第大区热暴露/热风险制图（2020-2022 年夏季）
  *
- * Hazard H: thermal anomaly dT ~ LST_p95 - LST_ref
- *   - LST_p95: per-pixel 95th percentile of clear-sky LST (deg C) from Landsat 8/9 C2 L2 (ST_B10)
- *   - LST_ref: mean LST over rural land cover (ESA WorldCover tree/shrub/grass/crop)
- *              within a 15-20 km annulus around the Lombardy geometry centroid (paper-style pins region)
+ * EN: Hazard H: thermal anomaly dT ~ LST_p95 - LST_ref
+ * ZH: 热危害 H：热异常 dT ≈ LST_p95 − LST_ref
+ *   EN: LST_p95 = per-pixel 95th percentile clear-sky LST (deg C), Landsat 8/9 C2 L2 ST_B10
+ *   ZH: LST_p95 = 夏季逐像元晴空 LST 第 95 百分位（°C），Landsat 8/9 C2 L2 的 ST_B10
+ *   EN: LST_ref = mean LST on rural cover (ESA WorldCover tree/shrub/grass/crop) in 15-20 km annulus around AOI centroid
+ *   ZH: LST_ref = 质心外 15–20 km 环形区内，乡村地类（WorldCover 林/灌/草/耕）上的 LST 均值
  *
- * Aggregation: mean of annual dT for 2020, 2021, 2022 -> hazardMean
- * Normalization: min-max of hazardMean within Lombardy -> H_norm in [0,1]
+ * EN: Aggregation: mean annual dT for 2020-2022 -> hazardMean; min-max normalize in Lombardy -> H_norm
+ * ZH: 聚合：三年 dT 取平均得 hazardMean；在伦巴第区内 min–max 归一化得 H_norm
  *
- * Exposure: WorldPop GP 100m (2020) population density (people/km2)
- * Risk: Risk = H_norm * PopDensity
+ * EN: Exposure: WorldPop GP 100m (2020) pop density; Risk = H_norm * PopDensity
+ * ZH: 暴露：WorldPop 2020 人口密度；风险 Risk = H_norm × 人口密度
  */
 
 var REF_RING_INNER_M = 15000;
@@ -24,6 +27,7 @@ var EXPORT_HAZARD = true;
 var EXPORT_H_NORM = true;
 var EXPORT_POP_DENSITY = true;
 
+// EN: Google Drive folder for exports / ZH: 导出目标网盘文件夹名称
 var DRIVE_FOLDER = 'GEE_Lombardy_HeatRisk';
 
 var lombardyFC = ee.FeatureCollection('FAO/GAUL/2015/level1')
@@ -178,6 +182,7 @@ Map.addLayer(hazardNorm, {min: 0, max: 1, palette: ['ffffcc', 'feb24c', 'fd8d3c'
 Map.addLayer(popDensity, {min: 0, max: 8000, palette: ['ffffd4', 'fed98e', 'fe9929', 'd95f0e', '993404']}, 'Pop density (/km2)', false);
 Map.addLayer(risk, {min: 0, max: 5000, palette: ['ffffcc', 'feb24c', 'fd8d3c', 'f03b20', 'bd0026']}, 'Risk (H_norm x density)', false);
 
+// EN: Export GeoTIFFs to Drive (run Tasks in Code Editor) / ZH: 导出 GeoTIFF 至网盘（在 Tasks 面板运行）
 function exportImg(img, description, fileNamePrefix) {
   Export.image.toDrive({
     image: img.toFloat(),

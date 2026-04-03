@@ -1,11 +1,20 @@
 # Methodology: Lombardy heat exposure / risk (2020–2022)
+# 方法说明：伦巴第热暴露/热风险（2020–2022）
 
-This note matches the Earth Engine workflow implemented as:
+**English** — This note documents the Earth Engine workflow (same logic in Python and JavaScript).
+
+**中文** — 本文说明 Earth Engine 处理流程（Python 与 JavaScript 实现一致）。
+
+Implementation / 实现入口：
 
 - Python: [`src/lombardy_heat_risk_gee.py`](../src/lombardy_heat_risk_gee.py) and [`notebooks/lombardy_heat_risk_2020_2022.ipynb`](../notebooks/lombardy_heat_risk_2020_2022.ipynb)
 - JavaScript (Code Editor): [`gee/heat_risk_lombardy_2020_2022.js`](../gee/heat_risk_lombardy_2020_2022.js)
 
-## Study area and period
+**中文摘要** — 以夏季 Landsat 地表温度 **LST 分位** 表征热环境，用 **环形乡村参考区** 计算热异常 \(\Delta T\)，三年取平均后 **min–max** 归一化；**WorldPop 2020** 人口密度为暴露，**风险 = 归一化危害 × 人口密度**。
+
+---
+
+## Study area and period / 研究区与时间
 
 - **Region**: Lombardy, Italy (`FAO/GAUL/2015/level1`, Italy, `Lombardia` / `Lombardy`).
 - **Years**: 2020, 2021, 2022 (summers only: 1 June–31 August).
