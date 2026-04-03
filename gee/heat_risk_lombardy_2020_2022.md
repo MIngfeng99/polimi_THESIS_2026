@@ -1,21 +1,19 @@
-# Google Earth Engine script (copy to `heat_risk_lombardy_2020_2022.js`)
-
-Paste the block below into the [Earth Engine Code Editor](https://code.earthengine.google.com/), or save as `gee/heat_risk_lombardy_2020_2022.js` in this repository.
+# Google Earth Engine script
 
 ```javascript
 /**
- * Lombardy heat exposure / risk mapping (2020–2022 summer)
+ * Lombardy heat exposure / risk mapping (2020-2022 summer)
  *
- * Hazard H: thermal anomaly ΔT ≈ LST_p95 − LST_ref
- *   - LST_p95: per-pixel 95th percentile of clear-sky LST (°C) from Landsat 8/9 C2 L2 (ST_B10)
- *   - LST_ref: mean LST over "rural" land cover (ESA WorldCover tree/shrub/grass/crop)
- *              within a 15–20 km annulus around the Lombardy geometry centroid
+ * Hazard H: thermal anomaly dT ~ LST_p95 - LST_ref
+ *   - LST_p95: per-pixel 95th percentile of clear-sky LST (deg C) from Landsat 8/9 C2 L2 (ST_B10)
+ *   - LST_ref: mean LST over rural land cover (ESA WorldCover tree/shrub/grass/crop)
+ *              within a 15-20 km annulus around the Lombardy geometry centroid (paper-style pins region)
  *
- * Aggregation: mean of annual ΔT for 2020, 2021, 2022 → hazardMean
- * Normalization: min–max of hazardMean within Lombardy → H_norm ∈ [0,1]
+ * Aggregation: mean of annual dT for 2020, 2021, 2022 -> hazardMean
+ * Normalization: min-max of hazardMean within Lombardy -> H_norm in [0,1]
  *
- * Exposure: WorldPop GP 100m (2020) population density (people/km²)
- * Risk: Risk = H_norm × PopDensity
+ * Exposure: WorldPop GP 100m (2020) population density (people/km2)
+ * Risk: Risk = H_norm * PopDensity
  */
 
 var REF_RING_INNER_M = 15000;
@@ -104,11 +102,19 @@ function deltaTForYear(year, regionGeom) {
   var rural = ruralMaskFromWorldCover(regionGeom);
 
   var lstProj = lstP95.projection();
-  var ruralReproj = rural.reproject({crs: lstProj, scale: 30});
+  var ruralReproj = rural.reproject({crs: lstProj, scale: 30}).eq(1);
 
-  var lstInRing = lstP95.clip(ring).updateMask(ruralReproj);
-  var refDict = lstInRing.reduceRegion({
+  var maskedRing = lstP95.updateMask(ruralReproj).clip(ring);
+
+  var refDict = maskedRing.reduceRegion({
     reducer: ee.Reducer.mean(),
+    geometry: ring,
+    scale: 30,
+    maxPixels: 1e13,
+    tileScale: 2,
+  });
+  var cntDict = maskedRing.reduceRegion({
+    reducer: ee.Reducer.count(),
     geometry: ring,
     scale: 30,
     maxPixels: 1e13,
@@ -116,6 +122,7 @@ function deltaTForYear(year, regionGeom) {
   });
 
   var lstRefRing = ee.Number(refDict.get('LST'));
+  var nPix = ee.Number(cntDict.get('LST'));
 
   var fallbackDict = lstP95.updateMask(ruralReproj).reduceRegion({
     reducer: ee.Reducer.mean(),
@@ -126,7 +133,7 @@ function deltaTForYear(year, regionGeom) {
   });
   var lstRefFallback = ee.Number(fallbackDict.get('LST'));
 
-  var lstRef = ee.Number(ee.Algorithms.If(lstRefRing, lstRefRing, lstRefFallback));
+  var lstRef = ee.Number(ee.Algorithms.If(nPix.gt(0), lstRefRing, lstRefFallback));
 
   return lstP95.subtract(lstRef).rename('deltaT').clip(regionGeom);
 }
@@ -168,11 +175,11 @@ var popDensity = pop.divide(pixelAreaKm2).rename('pop_density');
 
 var risk = hazardNorm.multiply(popDensity).rename('risk');
 
-Map.addLayer(d2020, {min: -5, max: 15, palette: ['313695', '4575b4', '74add1', 'fdae61', 'd73027']}, 'ΔT 2020', false);
-Map.addLayer(hazardMean, {min: -5, max: 15, palette: ['313695', '4575b4', '74add1', 'fdae61', 'd73027']}, 'ΔT mean 2020–22', true);
+Map.addLayer(d2020, {min: -5, max: 15, palette: ['313695', '4575b4', '74add1', 'fdae61', 'd73027']}, 'dT 2020', false);
+Map.addLayer(hazardMean, {min: -5, max: 15, palette: ['313695', '4575b4', '74add1', 'fdae61', 'd73027']}, 'dT mean 2020-22', true);
 Map.addLayer(hazardNorm, {min: 0, max: 1, palette: ['ffffcc', 'feb24c', 'fd8d3c', 'f03b20', 'bd0026']}, 'H_norm', false);
-Map.addLayer(popDensity, {min: 0, max: 8000, palette: ['ffffd4', 'fed98e', 'fe9929', 'd95f0e', '993404']}, 'Pop density (/km²)', false);
-Map.addLayer(risk, {min: 0, max: 5000, palette: ['ffffcc', 'feb24c', 'fd8d3c', 'f03b20', 'bd0026']}, 'Risk (H_norm×density)', false);
+Map.addLayer(popDensity, {min: 0, max: 8000, palette: ['ffffd4', 'fed98e', 'fe9929', 'd95f0e', '993404']}, 'Pop density (/km2)', false);
+Map.addLayer(risk, {min: 0, max: 5000, palette: ['ffffcc', 'feb24c', 'fd8d3c', 'f03b20', 'bd0026']}, 'Risk (H_norm x density)', false);
 
 function exportImg(img, description, fileNamePrefix) {
   Export.image.toDrive({

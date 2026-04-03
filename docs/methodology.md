@@ -27,7 +27,7 @@ For each summer:
    - Build a **15–20 km annulus** around the **Lombardy polygon centroid**.
    - Use **ESA WorldCover v200 2021** “rural” classes: tree (10), shrub (20), grass (30), crop (40).
    - \(T_{\mathrm{ref}}\) = **mean** of \(\mathrm{LST}_{p95}\) over masked rural pixels **inside the annulus**.
-   - If the annulus yields no valid mean, fall back to the **mean** of \(\mathrm{LST}_{p95}\) over rural pixels across the **full Lombardy AOI** (robustness).
+   - If the annulus contains **zero** valid rural pixels (pixel count \(=0\)), fall back to the **mean** of \(\mathrm{LST}_{p95}\) over rural pixels across the **full Lombardy AOI** (robustness).
 
 6. **Thermal anomaly** (hazard layer):
 
