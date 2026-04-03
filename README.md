@@ -6,13 +6,30 @@ Master thesis repository: **Lombardy heat environment and heat exposure / risk m
 
 | Path | Purpose |
 |------|---------|
-| [`gee/heat_risk_lombardy_2020_2022.js`](gee/heat_risk_lombardy_2020_2022.js) | Earth Engine script: \(\Delta T\) hazard (Landsat), **2020–2022** summer mean, **WorldPop 2020** density, **Risk = H_norm × pop density** |
-| [`gee/heat_risk_lombardy_2020_2022.md`](gee/heat_risk_lombardy_2020_2022.md) | Same script embedded in Markdown (for copy-paste) |
+| [`notebooks/lombardy_heat_risk_2020_2022.ipynb`](notebooks/lombardy_heat_risk_2020_2022.ipynb) | **Recommended:** Jupyter + **geemap** — same workflow as JS, export via `ee.batch.Export` to Drive |
+| [`src/lombardy_heat_risk_gee.py`](src/lombardy_heat_risk_gee.py) | Python EE logic (`build_stack`, `export_image_to_drive`) used by the notebook |
+| [`gee/heat_risk_lombardy_2020_2022.js`](gee/heat_risk_lombardy_2020_2022.js) | Legacy Earth Engine **JavaScript** (Code Editor) — identical logic |
+| [`gee/heat_risk_lombardy_2020_2022.md`](gee/heat_risk_lombardy_2020_2022.md) | Same JS script embedded in Markdown (for copy-paste) |
 | [`docs/methodology.md`](docs/methodology.md) | Method summary (equations, data sources) |
 | [`src/plot_risk.py`](src/plot_risk.py) | Optional local plotting of exported GeoTIFFs |
-| [`requirements.txt`](requirements.txt) | Python deps for `plot_risk.py` |
+| [`requirements.txt`](requirements.txt) | Python deps (EE, geemap, Jupyter, plotting) |
 
-## Run Google Earth Engine
+## Run Google Earth Engine (Python + Jupyter)
+
+1. Install dependencies and authenticate once:
+   ```bash
+   pip install -r requirements.txt
+   earthengine authenticate
+   ```
+2. Start Jupyter from the **repository root**:
+   ```bash
+   jupyter notebook notebooks/lombardy_heat_risk_2020_2022.ipynb
+   ```
+3. Run all cells: map layers render in the notebook; the last cell **starts** export tasks to Google Drive (folder `GEE_Lombardy_HeatRisk` by default). Check task status on [Earth Engine Tasks](https://code.earthengine.google.com/tasks).
+
+If your account uses a **Cloud project** for Earth Engine, replace `ee.Initialize()` in the notebook with `ee.Initialize(project='your-project-id')`.
+
+## Run Google Earth Engine (JavaScript Code Editor)
 
 1. Open [Earth Engine Code Editor](https://code.earthengine.google.com/).
 2. Paste the contents of [`gee/heat_risk_lombardy_2020_2022.js`](gee/heat_risk_lombardy_2020_2022.js).

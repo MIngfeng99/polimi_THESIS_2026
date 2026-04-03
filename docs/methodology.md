@@ -1,6 +1,9 @@
 # Methodology: Lombardy heat exposure / risk (2020–2022)
 
-This note matches the Google Earth Engine script in [`gee/heat_risk_lombardy_2020_2022.js`](../gee/heat_risk_lombardy_2020_2022.js).
+This note matches the Earth Engine workflow implemented as:
+
+- Python: [`src/lombardy_heat_risk_gee.py`](../src/lombardy_heat_risk_gee.py) and [`notebooks/lombardy_heat_risk_2020_2022.ipynb`](../notebooks/lombardy_heat_risk_2020_2022.ipynb)
+- JavaScript (Code Editor): [`gee/heat_risk_lombardy_2020_2022.js`](../gee/heat_risk_lombardy_2020_2022.js)
 
 ## Study area and period
 
